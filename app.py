@@ -19,6 +19,7 @@ import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -56,6 +57,8 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
 
+    def __repr__(self):
+      return f'<Venue ID: {self.id}, name: {self.name}>'
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -73,6 +76,8 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String(120))
     image_link = db.Column(db.String(120))
 
+    def __repr__(self):
+      return f'<Artist ID: {self.id}, name: {self.name}>'
 
 
 #----------------------------------------------------------------------------#
@@ -103,29 +108,17 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  # TODO: num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
+  data = []
+  for row in db.session.query(func.count(Venue.id), Venue.state, Venue.city).group_by(Venue.state,Venue.city).all():
+    state = row[1]
+    city = row[2]
+    # grab details
+    venues = []
+    result = db.session.query(Venue).filter(Venue.state==str(state), Venue.city==str(city))
+    for row in result:
+      venues.append({"id":row.id,"name":row.name,"num_upcoming_shows": 0})
+    data.append({"state":str(state),"city":str(city),"venues": venues })
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
