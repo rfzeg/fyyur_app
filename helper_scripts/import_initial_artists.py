@@ -4,11 +4,11 @@ from psycopg2.extensions import AsIs
 artist4={
     "id": 4,
     "name": "Guns N Petals",
-    # "genres": ["Rock n Roll"],
+    "genres": ["Rock n Roll"],
     "city": "San Francisco",
     "state": "CA",
     "phone": "326-123-5000",
-    # "website": "https://www.gunsnpetalsband.com",
+    "website": "https://www.gunsnpetalsband.com",
     "facebook_link": "https://www.facebook.com/GunsNPetals",
     "seeking_venue": True,
     "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
@@ -26,7 +26,7 @@ artist4={
 artist5={
     "id": 5,
     "name": "Matt Quevedo",
-    # "genres": ["Jazz"],
+    "genres": ["Jazz"],
     "city": "New York",
     "state": "NY",
     "phone": "300-400-5000",
@@ -46,7 +46,7 @@ artist5={
 artist6={
     "id": 6,
     "name": "The Wild Sax Band",
-    # "genres": ["Jazz", "Classical"],
+    "genres": ["Jazz", "Classical"],
     "city": "San Francisco",
     "state": "CA",
     "phone": "432-325-5432",
@@ -101,11 +101,14 @@ try:
     """
     cursor = conn.cursor()
     for artist in artist_list:
+      # Create artist record in db
       columns = artist.keys()
       values = [artist[column] for column in columns]
-      insert_statement = """INSERT INTO "Artist" (%s) values %s  """
+      insert_statement = """INSERT INTO "Artist" (%s) values %s returning id"""
       query = cursor.mogrify(insert_statement, (AsIs(','.join(columns)), tuple(values)))
       cursor.execute(query)
+      inserted_id = cursor.fetchone()[0]
+      print("Inserted id: %s"%(inserted_id))
     conn.commit()
 
 except (Exception, psycopg2.Error) as e:

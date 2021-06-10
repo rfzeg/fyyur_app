@@ -4,7 +4,7 @@ from psycopg2.extensions import AsIs
 venue1={
     "id": 1,
     "name": "The Musical Hop",
-    # "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
+    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
     "address": "1015 Folsom Street",
     "city": "San Francisco",
     "state": "CA",
@@ -27,7 +27,7 @@ venue1={
 venue2={
     "id": 2,
     "name": "The Dueling Pianos Bar",
-    # "genres": ["Classical", "R&B", "Hip-Hop"],
+    "genres": ["Classical", "R&B", "Hip-Hop"],
     "address": "335 Delancey Street",
     "city": "New York",
     "state": "NY",
@@ -44,7 +44,7 @@ venue2={
 venue3={
     "id": 3,
     "name": "Park Square Live Music & Coffee",
-    # "genres": ["Rock n Roll", "Jazz", "Classical", "Folk"],
+    "genres": ["Rock n Roll", "Jazz", "Classical", "Folk"],
     "address": "34 Whiskey Moore Ave",
     "city": "San Francisco",
     "state": "CA",
@@ -105,7 +105,43 @@ venue4={
     # "upcoming_shows_count": 1,
   }
 
-venue_list = [venue1,venue2,venue3,venue4]
+venue5={
+    "id": 5,
+    "name": "Prancing Pony",
+    "genres": ["Electronic"],
+    "address": "Boca Chica Blvd",
+    "city": "Starbase",
+    "state": "TX",
+    "phone": "310-363-6000",
+    "website": "https://www.spacex.com",
+    "facebook_link": "https://www.facebook.com/SpaceXBocaChica/",
+    "seeking_talent": False,
+    "image_link": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80",
+    # "past_shows": [],
+    # "upcoming_shows": [],
+    # "past_shows_count": 0,
+    # "upcoming_shows_count": 0,
+  }
+
+venue6={
+    "id": 6,
+    "name": "Death & Co",
+    "genres": ["Electronic", "R&B", "Hip-Hop"],
+    "address": "810 East 3rd Street",
+    "city": "Los Angles",
+    "state": "CA",
+    "phone": "212-388-0882",
+    "website": "https://www.deathandcompany.com",
+    "facebook_link": "https://www.facebook.com/deathandcompany",
+    "seeking_talent": False,
+    "image_link": "https://images.unsplash.com/photo-1497032205916-ac775f0649ae?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80",
+    # "past_shows": [],
+    # "upcoming_shows": [],
+    # "past_shows_count": 0,
+    # "upcoming_shows_count": 0,
+  }
+
+venue_list = [venue1,venue2,venue3,venue4,venue5,venue6]
 
 try:
     
@@ -120,11 +156,14 @@ try:
     """
     cursor = conn.cursor()
     for venue in venue_list:
+      # Create venue record in db
       columns = venue.keys()
       values = [venue[column] for column in columns]
-      insert_statement = """INSERT INTO "Venue" (%s) values %s  """
+      insert_statement = """INSERT INTO "Venue" (%s) values %s returning id"""
       query = cursor.mogrify(insert_statement, (AsIs(','.join(columns)), tuple(values)))
       cursor.execute(query)
+      inserted_id = cursor.fetchone()[0]
+      print("Inserted id: %s"%(inserted_id))
     conn.commit()
 
 except (Exception, psycopg2.Error) as e:
