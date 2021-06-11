@@ -202,7 +202,6 @@ def artists():
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
   # Case-insensitive search on artists with partial string search.
-  # To-do: num_upcoming_shows should be aggregated based on number of upcoming shows per artists.
 
   response = {}
   search_term = request.form.get('search_term', '')
@@ -210,7 +209,9 @@ def search_artists():
   query_result = db.session.query(Artist).filter(Artist.name.ilike(query_term)).all()
   data = []
   for row in query_result:
-    data.append({"id": row.id, "name": row.name, "num_upcoming_shows": 0})
+    #count_upcoming_shows = Show.query.filter(Show.parent_artist_id==row.id).filter(Show.start_time>datetime.now()).count()
+    #data.append({"id": row.id, "name": row.name, "num_upcoming_shows": count_upcoming_shows})
+    data.append({"id": row.id, "name": row.name})
   response["count"] = len(query_result)
   response["data"] = data
 
