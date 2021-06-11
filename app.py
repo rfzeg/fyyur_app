@@ -138,7 +138,6 @@ def venues():
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
   # Case-insensitive search on venues with partial string search.
-  # To-do: num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
 
   response = {}
   search_term = request.form.get('search_term', '')
@@ -146,7 +145,9 @@ def search_venues():
   query_result = db.session.query(Venue).filter(Venue.name.ilike(query_term)).all()
   data = []
   for row in query_result:
-    data.append({"id": row.id, "name": row.name, "num_upcoming_shows": 0})
+    #count_upcoming_shows = Show.query.filter(Show.parent_venue_id==row.id).filter(Show.start_time>datetime.now()).count()
+    #data.append({"id": row.id, "name": row.name, "num_upcoming_shows": count_upcoming_shows})
+    data.append({"id": row.id, "name": row.name})
   response["count"] = len(query_result)
   response["data"] = data
 
