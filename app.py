@@ -56,6 +56,7 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
+    shows = db.relationship('Show', backref='parent_venue', lazy=True)
 
     def __repr__(self):
       return f'<Venue ID: {self.id}, name: {self.name}>'
@@ -75,6 +76,7 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
     image_link = db.Column(db.String(120))
+    shows = db.relationship('Show', backref='parent_artist', lazy=True)
 
     def __repr__(self):
       return f'<Artist ID: {self.id}, name: {self.name}>'
@@ -85,9 +87,11 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     start_time = db.Column(db.DateTime, nullable=False)
+    parent_artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
+    parent_venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
 
     def __repr__(self):
-      return f'<Show ID: {self.id}, name: {self.name}, start time: {self.start_time}>'
+      return f'<Show name: {self.name}, start time: {self.start_time}, Artist: {self.parent_artist_id}, Venue: {self.parent_venue_id}>'
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -297,12 +301,11 @@ def create_artist_submission():
 @app.route('/shows')
 def shows():
   # displays list of shows at /shows
-  # TODO: include data from parents 'Venue' and 'Artist'
 
   data =[]
-  query_result = Show.query.all()
+  query_result = Show.query.join(Artist).join(Venue).all()
   for row in query_result:
-    data.append({"id":  row.id, "start_time": row.start_time.strftime('%Y-%m-%d %H:%M:%S')})
+    data.append({"venue_id":  row.parent_venue_id, "venue_name": row.parent_venue.name, "artist_id": row.parent_artist_id, "artist_name": row.parent_artist.name, "artist_image_link": row.parent_artist.image_link,  "start_time": row.start_time.strftime('%Y-%m-%d %H:%M:%S')})
 
   return render_template('pages/shows.html', shows=data)
 
