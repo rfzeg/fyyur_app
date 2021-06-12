@@ -35,7 +35,7 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 # link up Flask app and SQLAlchemy db to use Flask-Migrate
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -75,7 +75,6 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
-    image_link = db.Column(db.String(120))
     shows = db.relationship('Show', backref='parent_artist', lazy=True)
 
     def __repr__(self):
