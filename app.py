@@ -242,7 +242,44 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the artist page with the given artist_id
-  data = Artist.query.get(artist_id)
+  artist = Artist.query.get(artist_id)
+  artist_shows_query = Show.query.filter(Show.parent_artist_id==artist_id)
+  upcoming_shows_query = artist_shows_query.filter(Show.start_time>datetime.now())
+  past_shows_query = artist_shows_query.filter(Show.start_time<datetime.now())
+  upcoming_shows_count = upcoming_shows_query.count()
+  past_shows_count = len(artist.shows) - upcoming_shows_count
+  data={
+    "id": artist.id,
+    "name": artist.name,
+    "genres": artist.genres,
+    "city": artist.city,
+    "state": artist.state,
+    "phone": artist.phone,
+    "website": artist.website,
+    "facebook_link": artist.facebook_link,
+    "seeking_venue": artist.seeking_venue,
+    "seeking_description": artist.seeking_description,
+    "image_link": artist.image_link,
+    "past_shows": [],
+    "upcoming_shows": [],
+    "past_shows_count": past_shows_count,
+    "upcoming_shows_count": upcoming_shows_count,
+  }
+
+  for show in upcoming_shows_query:
+    data["upcoming_shows"].append({"venue_id": show.parent_venue.id,
+                                       "venue_name": show.parent_venue.name,
+                                       "venue_image_link": show.parent_venue.image_link,
+                                       "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                       })
+
+  for show in past_shows_query:
+    data["past_shows"].append({"venue_id": show.parent_venue.id,
+                               "venue_name": show.parent_venue.name,
+                               "venue_image_link": show.parent_venue.image_link,
+                               "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                               })
+
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
