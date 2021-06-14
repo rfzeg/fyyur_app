@@ -16,7 +16,7 @@ Usage: python3 app.py
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
@@ -56,7 +56,7 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='parent_venue', lazy=True)
+    shows = db.relationship('Show', backref='parent_venue', lazy=True, cascade="all, delete, delete-orphan")
 
     def __repr__(self):
       return f'<Venue ID: {self.id}, name: {self.name}>'
@@ -75,7 +75,7 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='parent_artist', lazy=True)
+    shows = db.relationship('Show', backref='parent_artist', lazy=True,  cascade="all, delete, delete-orphan")
 
     def __repr__(self):
       return f'<Artist ID: {self.id}, name: {self.name}>'
@@ -192,14 +192,23 @@ def create_venue_submission():
   
   return render_template('pages/home.html')
 
+# Endpoint for deleting a venue
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    error = False
+    try:
+        venue = Venue.query.get_or_404(venue_id)
+        db.session.delete(venue)
+        db.session.commit()
+        flash('Venue with id: ' + str(venue_id) + ' was successfully deleted!')
+    except:
+        db.session.rollback()
+        error = True
+        flash('An error occured, venue with id:' + str(venue_id) + ' could not be deleted!')
+    finally:
+        db.session.close()
+        return jsonify({"success": True})
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
 
 #  Artists
 #  ----------------------------------------------------------------

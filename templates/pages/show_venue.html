@@ -87,6 +87,33 @@
 -->
 
 <a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button class="btn btn-danger btn-lg venue-list-delete" data-id="{{ venue.id }}">
+  <i class="fas fa-trash"></i>
+</button>
+
+<script>
+	const deleteBtns = document.getElementsByClassName('venue-list-delete');
+
+	const deleteOnClick = (e) => {
+		const venueId = e.target.dataset.id;
+		console.log(venueId);
+		fetch(`/venues/${venueId}`, { method: 'DELETE' })
+			.then(function (res) {
+				if (res.status == 200) {
+					// redirect to homepage
+					window.location.href = window.location.origin;
+				}
+			})
+			.catch(function (e) {
+				console.error(e);
+			});
+	}
+
+	for (let i = 0; i < deleteBtns.length; i++) {
+		deleteBtns[i].onclick = deleteOnClick;
+	}
+
+</script>
 
 {% endblock %}
 
