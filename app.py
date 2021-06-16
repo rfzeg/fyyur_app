@@ -52,7 +52,7 @@ class Venue(db.Model):
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-    website = db.Column(db.String(120))
+    website_link = db.Column(db.String(120))
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
@@ -70,7 +70,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
+    website_link = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
@@ -169,7 +169,7 @@ def show_venue(venue_id):
     "city": venue.city,
     "state": venue.state,
     "phone": venue.phone,
-    "website": venue.website,
+    "website": venue.website_link,
     "facebook_link": venue.facebook_link,
     "seeking_talent": venue.seeking_talent,
     "seeking_description": venue.seeking_description,
@@ -209,15 +209,9 @@ def create_venue_submission():
   form = VenueForm(request.form)
   error = False
   try:
-    venue = Venue(name = form.name.data,
-                  city = form.city.data,
-                  state = form.state.data,
-                  address = form.address.data,
-                  phone = form.phone.data,
-                  genres = form.genres.data,
-                  image_link = form.image_link.data,
-                  seeking_talent = form.seeking_talent.data,
-                  seeking_description = form.seeking_description.data)
+    venue = Venue()
+    # populate the attributes of venue with data from the form’s fields
+    form.populate_obj(venue)
     db.session.add(venue)
     db.session.commit()
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
@@ -293,7 +287,7 @@ def show_artist(artist_id):
     "city": artist.city,
     "state": artist.state,
     "phone": artist.phone,
-    "website": artist.website,
+    "website": artist.website_link,
     "facebook_link": artist.facebook_link,
     "seeking_venue": artist.seeking_venue,
     "seeking_description": artist.seeking_description,
@@ -335,19 +329,10 @@ def edit_artist_submission(artist_id):
   form = ArtistForm(request.form)
   error = False
   try:
-    # retrieve object
     artist = Artist.query.get(artist_id)
-    # update fields
-    artist.name = form.name.data
-    artist.city = form.city.data
-    artist.state = form.state.data
-    artist.phone = form.phone.data
-    artist.website = form.website_link.data
-    artist.genres = form.genres.data
-    artist.image_link = form.image_link.data
-    artist.facebook_link = form.facebook_link.data
-    artist.seeking_venue = form.seeking_venue.data
-    artist.seeking_description = form.seeking_description.data
+    # populate the attributes of artist with data from the form’s fields
+    form.populate_obj(artist)
+    db.session.add(artist)
     db.session.commit()
     flash('Artist ' + request.form['name'] + ' was successfully updated!')
   except:
@@ -371,20 +356,10 @@ def edit_venue_submission(venue_id):
   form = VenueForm(request.form)
   error = False
   try:
-    # retrieve object
     venue = Venue.query.get(venue_id)
-    # update fields
-    venue.name = form.name.data
-    venue.city = form.city.data
-    venue.state = form.state.data
-    venue.address = form.address.data
-    venue.phone = form.phone.data
-    venue.genres = form.genres.data
-    venue.image_link = form.image_link.data
-    venue.website = form.website_link.data
-    venue.facebook_link = form.facebook_link.data
-    venue.seeking_talent = form.seeking_talent.data
-    venue.seeking_description = form.seeking_description.data
+    # populate the attributes of venue with data from the form’s fields
+    form.populate_obj(venue)
+    db.session.add(venue)
     db.session.commit()
     flash('Venue ' + request.form['name'] + ' was successfully updated!')
   except:
@@ -408,16 +383,9 @@ def create_artist_submission():
   form = ArtistForm(request.form)
   error = False
   try:
-    artist = Artist(name = form.name.data,
-                    city = form.city.data,
-                    state = form.state.data,
-                    phone = form.phone.data,
-                    website = form.website_link.data,
-                    genres = form.genres.data,
-                    image_link = form.image_link.data,
-                    facebook_link = form.facebook_link.data,
-                    seeking_venue = form.seeking_venue.data,
-                    seeking_description = form.seeking_description.data)
+    artist = Artist()
+    # populate the attributes of artist with data from the form’s fields
+    form.populate_obj(artist)
     db.session.add(artist)
     db.session.commit()
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
