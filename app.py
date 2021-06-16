@@ -16,15 +16,24 @@ Usage: python3 app.py
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    Response,
+    flash,
+    redirect,
+    url_for,
+    jsonify
+    )
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
+from models import db, Venue, Artist, Show # Models
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -33,64 +42,9 @@ app = Flask(__name__)
 moment = Moment(app)
 # import from config file in Flask
 app.config.from_object('config')
-db = SQLAlchemy(app)
+db.init_app(app)
 # link up Flask app and SQLAlchemy db to use Flask-Migrate
 migrate = Migrate(app, db, compare_type=True)
-
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    genres = db.Column(db.ARRAY(db.String(120)))
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    website_link = db.Column(db.String(120))
-    facebook_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
-    seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='parent_venue', lazy=True, cascade="all, delete, delete-orphan")
-
-    def __repr__(self):
-      return f'<Venue ID: {self.id}, name: {self.name}>'
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    genres = db.Column(db.ARRAY(db.String(120)))
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    website_link = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
-    seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='parent_artist', lazy=True,  cascade="all, delete, delete-orphan")
-
-    def __repr__(self):
-      return f'<Artist ID: {self.id}, name: {self.name}>'
-
-class Show(db.Model):
-    __tablename__ = 'Show'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    start_time = db.Column(db.DateTime, nullable=False)
-    parent_artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
-    parent_venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
-
-    def __repr__(self):
-      return f'<Show name: {self.name}, start time: {self.start_time}, Artist: {self.parent_artist_id}, Venue: {self.parent_venue_id}>'
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -248,7 +202,6 @@ def delete_venue(venue_id):
 def artists():
   data = []
   for instance in Artist.query.with_entities(Artist.id, Artist.name):
-      print(instance.id, instance.name)
       data.append({"id": instance.id, "name": str(instance.name)})
 
   return render_template('pages/artists.html', artists=data)
@@ -367,7 +320,7 @@ def edit_venue_submission(venue_id):
     db.session.rollback()
     flash('An error occured. Venue ' + request.form['name'] + ' could not be updated!')
   finally:
-    db.session.close()  
+    db.session.close()
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -403,11 +356,11 @@ def create_artist_submission():
 @app.route('/shows')
 def shows():
   # displays list of shows at /shows
-
+  # To-do: display only upcoming shows
   data =[]
   query_result = Show.query.join(Artist).join(Venue).all()
   for row in query_result:
-    data.append({"venue_id":  row.parent_venue_id, "venue_name": row.parent_venue.name, "artist_id": row.parent_artist_id, "artist_name": row.parent_artist.name, "artist_image_link": row.parent_artist.image_link,  "start_time": row.start_time.strftime('%Y-%m-%d %H:%M:%S')})
+    data.append({"venue_id": row.parent_venue_id, "venue_name": row.parent_venue.name, "artist_id": row.parent_artist_id, "artist_name": row.parent_artist.name, "artist_image_link": row.parent_artist.image_link,  "start_time": row.start_time.strftime('%Y-%m-%d %H:%M:%S')})
 
   return render_template('pages/shows.html', shows=data)
 

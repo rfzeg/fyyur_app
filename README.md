@@ -28,6 +28,22 @@ conda env create -f environment.yml
 
 * **Google Chrome** to show **HTML**, **CSS** and **Javascript**.
 
+
+## Usage:
+
+1. **Start a Postgres server on your local machine:**  
+From within your virtual environment, `cd` to the parent directory of your database cluster folder (in this example 'my_db_cluster'), then run:  
+`pg_ctl -D my_db_cluster start`  
+
+2. **Run the development server:**
+```
+python3 app.py
+```
+
+3. **Verify on the Browser**<br>
+Navigate to project homepage [http://127.0.0.1:5000/](http://127.0.0.1:5000/) or [http://localhost:5000](http://localhost:5000) 
+
+
 ## Starter code
 
 This Web App is based on the following project starter files:  
